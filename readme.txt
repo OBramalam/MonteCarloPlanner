@@ -1,0 +1,51 @@
+start frontend from dir with
+
+python -m http.server 8888 &
+
+
+launch config for Backend
+
+
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug App: Waitress (LOCAL)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Backend/app.py",
+            "args": [
+                "--port",
+                "5000",
+                "--host",
+                "127.0.0.1"
+            ],
+            "jinja": true,
+            "env": {
+                "FLASK_APP": "app.py",
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug App: Waitress (0.0.0.0:5000)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Backend/app.py",
+            "args": [
+                "--port",
+                "5000",
+                "--host",
+                "0.0.0.0"
+            ],
+            "jinja": true,
+            "env": {
+                "FLASK_APP": "app.py",
+            },
+            "console": "integratedTerminal"
+        }
+    ]
+}
