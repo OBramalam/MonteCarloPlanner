@@ -66,7 +66,6 @@ async function drawCashflowPlot(points) {
             dragXMax = nextXpos - 1;
             dragXMin = prevXpos + 1;
         }
-        console.log('dragXMin', dragXMin, 'dragXMax', dragXMax);
     }
 
     function dragged(d) {
@@ -99,10 +98,104 @@ async function drawCashflowPlot(points) {
         runSimulationSignal.emit();
     }
 
+    let lineDrag = d3.drag()
+        .filter(function(d) {
+            // Shift + drag
+            return d.shiftKey;
+        })
+        .on('start', lineDragStart)
+        .on('drag', lineDragged)
+        .on('end', lineDragEnd);
+
+    let lineDragLeftStepIndex;
+    let lineDragRightStepIndex;
+    let lineDragLeftInitYpos;
+    let lineDragRightInitYpos;
+    let lineDrayInitYpos;
+
+    function lineDragStart(d) {
+        d3.select(this).raise().classed('active', true);
+        xpos = x.invert(d3.pointer(d, this)[0]);
+        lineDrayInitYpos = y.invert(d3.pointer(d, this)[1]);
+    
+        prevStep = points.filter(function(x) {
+            return x.Step < xpos;
+        }
+        );
+        prevStep = Math.max.apply(null, prevStep.map(function(x) {
+            return x.Step;
+        }));
+        nextStep = points.filter(function(x) {
+            return x.Step > xpos;
+        }
+        );
+        nextStep = Math.min.apply(null, nextStep.map(function(x) {
+            return x.Step;
+        }));
+        if (prevStep === -Infinity) {
+            prevStep = 0;
+        }
+        if (nextStep === Infinity) {
+            nextStep = maxSteps;
+        }
+
+        lineDragLeftStepIndex = points.findIndex(function(x) {
+            return x.Step === prevStep;
+        });
+        lineDragRightStepIndex = points.findIndex(function(x) {
+            return x.Step === nextStep;
+        });
+        lineDragLeftInitYpos = points[lineDragLeftStepIndex].Value;
+        lineDragRightInitYpos = points[lineDragRightStepIndex].Value;
+        tooltip.style("visibility", "visible");
+    }
+
+    function lineDragged(d) {
+        let new_y = y.invert(d3.pointer(d, this)[1]);
+        new_y = Math.max(maxOutflow, Math.min(maxInflow, new_y));
+        
+
+        let leftPoint = points[lineDragLeftStepIndex];
+        let rightPoint = points[lineDragRightStepIndex];
+
+        console.log('line drag', new_y-lineDrayInitYpos);
+
+        points[lineDragLeftStepIndex].Value = Math.max(maxOutflow, Math.min(maxInflow, lineDragLeftInitYpos + (new_y - lineDrayInitYpos)));
+        points[lineDragRightStepIndex].Value = Math.max(maxOutflow, Math.min(maxInflow, lineDragRightInitYpos + (new_y - lineDrayInitYpos)));
+
+        if (points && points.length > 0) {
+            focus.selectAll('#plotline').attr('d', line(points));
+        }
+
+        d3.select("#point-" + leftPoint.Step)
+            .attr('cx', x(leftPoint.Step))
+            .attr('cy', y(leftPoint.Value));
+        d3.select("#point-" + rightPoint.Step)
+            .attr('cx', x(rightPoint.Step))
+            .attr('cy', y(rightPoint.Value));
+
+        tooltip.html(
+            "$" + points[lineDragLeftStepIndex].Value.toFixed(2) + " to $" + points[lineDragRightStepIndex].Value.toFixed(2) 
+            + "<br/>" + leftPoint.Step / 12 + " to " + rightPoint.Step / 12 + " years")
+            .style("left", (event.pageX + 5) + "px")
+            .style("top", (event.pageY - 28) + "px")
+            .style("visibility", "visible");
+            
+    }
+
+    function lineDragEnd(d) {
+        d3.select(this).classed('active', false);
+        tooltip.style("visibility", "hidden");
+        runSimulationSignal.emit();
+        drawCashflowPlot(points); // redraw to reset the svg order (idk why this is needed)
+    }
+
+
+
     let yAxis = d3.axisLeft(y);
 
     let xAxis = d3.axisBottom(x)
-        .tickValues(d3.range(0, d3.max(points, d => d.Step) + 1, 24))
+        .tickValues(d3.range(0, d3.max(points, d => d.Step) + 1, Math.ceil(maxSteps/simStep/30)*simStep))
         .tickFormat(d => d / 12);
         
     let line = d3.line()
@@ -120,9 +213,20 @@ async function drawCashflowPlot(points) {
 
     let focus = chart.append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        
+
 
     x.domain(d3.extent(points, function(d) { return d.Step; }));
-    y.domain([maxOutflow, maxInflow]); // Set Y-axis range between -10,000 and +10,000
+    y.domain([maxOutflow, maxInflow]);
+
+    focus.append("rect")
+        .attr("class", "plot-background")
+        .attr("x", 0)
+        .attr("y", y(0))
+        .attr("width", width)   
+        .attr("height", y(maxOutflow) - y(0)) 
+        .attr("fill", "red")
+        .attr("opacity", 0.1);
 
     focus.append("path")
         .datum(points)
@@ -142,6 +246,7 @@ async function drawCashflowPlot(points) {
         .attr("stroke", "transparent") // Make the buffer path invisible
         .attr("stroke-width", 10) // Increase the stroke width for a larger mouseover region
         .attr("d", line)
+        .call(lineDrag)
         .on('click', function(d) {
             xpos = x.invert(d3.pointer(d, this)[0]);
             ypos = y.invert(d3.pointer(d, this)[1]);
@@ -186,6 +291,7 @@ async function drawCashflowPlot(points) {
         .data(points)
         .enter()
         .append('circle')
+        .attr("id", function(d) { return "point-" + d.Step; })
         .attr('class', 'point')
         .attr('r', 5.0)
         .attr('cx', function(d) { return x(d.Step); })
@@ -216,6 +322,64 @@ async function drawCashflowPlot(points) {
 
             drawCashflowPlot(points);
             runSimulationSignal.emit();
+        })
+        .on("mouseover", function() {
+            d3.select(this).attr("r", 7); // Highlight point on hover
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("r", 5); // Reset point size
+        })
+        .on("contextmenu", function (event, d) {
+            // Prevent the default context menu from appearing
+            event.preventDefault();
+    
+            // Create a dialog box for setting the value
+            const dialog = d3.select("body")
+                .append("div")
+                .attr("class", "dialog")
+                .style("position", "absolute")
+                .style("left", `${event.pageX}px`)
+                .style("top", `${event.pageY}px`)
+                .style("background", "white")
+                .style("border", "1px solid #ccc")
+                .style("padding", "10px")
+                .style("border-radius", "5px")
+                .style("box-shadow", "0px 2px 5px rgba(0, 0, 0, 0.2)");
+    
+            dialog.append("label")
+                .text("Set Value: ")
+                .style("margin-right", "5px");
+    
+            const input = dialog.append("input")
+                .attr("type", "number")
+                .attr("value", d.Value)
+                .style("width", "80px");
+    
+            dialog.append("button")
+                .text("Set")
+                .style("margin-left", "5px")
+                .on("click", function () {
+                    const newValue = parseFloat(input.node().value);
+                    if (!isNaN(newValue)) {
+                        d.Value = Math.max(maxOutflow, Math.min(maxInflow, newValue)); // Clamp value within bounds
+    
+                        // Update the point and line
+                        d3.select(`#point-${d.Step}`)
+                            .attr("cy", y(d.Value));
+                        focus.selectAll("#plotline").attr("d", line(points));
+                    }
+    
+                    // Remove the dialog
+                    dialog.remove();
+                    runSimulationSignal.emit();
+                });
+    
+            dialog.append("button")
+                .text("Cancel")
+                .style("margin-left", "5px")
+                .on("click", function () {
+                    dialog.remove(); // Remove the dialog without making changes
+                });
         })
         .call(drag);
 

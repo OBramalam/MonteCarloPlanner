@@ -132,6 +132,17 @@ class AbstractSimulationStrategy(ABC):
             DataFrame containing the mean.
         """
         return np.mean(self.simulation_data, axis=0)
+    
+    def get_median(self) -> np.ndarray:
+        """
+        Returns the median of the simulation data.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame containing the median.
+        """
+        return np.median(self.simulation_data, axis=0)
 
 
 class CholeskySimulationStrategy(AbstractSimulationStrategy):

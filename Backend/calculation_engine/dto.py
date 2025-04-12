@@ -23,6 +23,11 @@ class SimulationDataDTO(AbstractDTO):
     """Data Transfer Object for simulation data."""
     percentiles: dict[float, list[float]]
     mean: list[float]
+    final_mean: float
+    final_median: float
+    final_std: float
+    final_min: float
+    final_max: float
     
 
 class SimulationResultDTO(AbstractDTO):
@@ -30,3 +35,14 @@ class SimulationResultDTO(AbstractDTO):
     nominal: SimulationDataDTO
     destitution: list[float]
     timesteps: list[float]
+    # final_mean: float
+    # final_median: float
+    # final_std: float
+    # final_min: float
+    # final_max: float
+    simulation_time: float
+    simulation_time_per_timestep: float
+    simulation_time_per_path: float
+    total_parameters: int
+    destitution_area: float
+    

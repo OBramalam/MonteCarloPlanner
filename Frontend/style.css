@@ -1,26 +1,37 @@
 * {
     font-family: 'Open Sans', sans-serif;
+    font-size: 12px;
+    caret-color: transparent;
 }
 
 #sectionbox {
-    border: 1px solid #ccc;
     padding: 10px;
     width: fit-content;
     height: fit-content;
     border-radius: 5px;
-    margin-bottom: 5px;
+    margin: 5px;
+
 }
 
 #controlbox {
     background-color: #f0f0f0;
-    border: 1px solid #ccc;
+    border: 1px solid #f6f4ed;
     padding: 10px;
     width: fit-content;
     border-radius: 5px;
 }
 
+#textbox {
+    background-color: #fffdfa;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: fit-content;
+    border-radius: 5px;
+    margin: 5px;
+}
+
 h1 {
-    font-size: 24px;
+    font-size: 20px;
     color: #333;
     font-family: 'Open Sans', sans-serif;
     margin: 0;
@@ -28,17 +39,25 @@ h1 {
 }
 
 h2 {
-    font-size: 20px;
+    font-size: 18px;
     color: #333;
     font-family: 'Open Sans', sans-serif;
     margin: 0;
     text-align: left;
 }
 
-#container {
+h3 {
+    font-size: 14px;
+    color: #333;
+    font-family: 'Open Sans', sans-serif;
+    margin: 0;
+    text-align: left;
+}
+
+#hContainer {
     display: flex;
     justify-content: top;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: row;
 
     height: fit-content;
@@ -56,7 +75,7 @@ input[type="number"]:focus {
 }
 
 label {
-    font-size: 16px;
+    font-size: 12px;
     color: #333;
     margin-bottom: 5px;
     display: block;
@@ -66,14 +85,31 @@ label {
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-left: 10px;
 }
 th {
     text-align: left;}
+th, td {
+    padding-left: 5px;
+}
 
 p {
-    font-size: 16px;
     color: #333;
     margin: 0;
+}
+
+button {
+    background-color : #c5c5c5;
+    color: rgb(24, 24, 24);
+    border: none;
+    padding: 5px 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin-top: 10px;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
 button#runsim  {
@@ -84,19 +120,26 @@ button#runsim  {
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
+    font-size: 14px;
     margin-top: 10px;
     cursor: pointer;
     border-radius: 5px;
+    text-wrap: nowrap;
 }
 button#runsim:hover {
     background-color: #e20000;
 }
 
 select {
-    width: 100%;
+    width: 80px;
     padding: 5px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 1px;
+}
+
+.dialog {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 1000; /* Ensure it appears above other elements */
 }

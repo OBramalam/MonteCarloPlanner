@@ -20,6 +20,18 @@ var exampleSimulationData = {
 
 function drawDestitutionGraph (simData){
 
+    let tooltip = d3.select("body")
+        .append("div")
+        .style("position", "absolute")
+        .style("background", "lightgray")
+        .style("padding", "5px")
+        .style("border-radius", "5px")
+        .style("pointer-events", "none")
+        .style("visibility", "hidden")
+        .style("width", "180px")
+        .style("opacity", 0.8)
+        .style("font-size", "12px");
+
     let chart = d3.select("#extinction-chart"),
         margin = { top: 20, right: 20, bottom: 30, left: 50 },
         width = +chart.attr("width") - margin.left - margin.right,
@@ -54,7 +66,7 @@ function drawDestitutionGraph (simData){
     y.domain([0, 1]);
 
     let xAxis = d3.axisBottom(x)
-        .tickValues(d3.range(0, d3.max(chartData, d => d.Step) + 1, 24))
+        .tickValues(d3.range(0, d3.max(chartData, d => d.Step) + 1, Math.ceil(maxSteps/simStep/30)*simStep))
         .tickFormat(d => d / 12);
 
     let yAxis = d3.axisLeft(y)
@@ -84,6 +96,54 @@ function drawDestitutionGraph (simData){
         .attr("x", width)
         .attr("y", height - 6)
         .text("Years");
+
+
+    let verticalLine = d3.select("#extinction-chart")
+        .append("line")
+        .attr("class", "cursor-line")
+        .attr("y1", 0 + margin.top)
+        .attr("y2", height + margin.top)
+        .style("stroke", "gray")
+        .style("stroke-width", 1)
+        .style("pointer-events", "none")
+        .style("visibility", "hidden")
+        .style("opacity", 0.8);
+
+    let overlay = focus
+        .append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .on("mousemove", function (event) {
+            let xPos = x.invert(d3.pointer(event, this)[0]);
+            let xValue = (xPos + 1)/ simStep ;
+            
+            let closestIndex = Math.round(xValue);
+            let closestData = chartData[closestIndex+1];
+            if (closestData === undefined) {
+                return;
+            }
+
+            verticalLine
+                .attr("x1", x(xPos) + margin.left)
+                .attr("x2", x(xPos) + margin.left)
+                .style("visibility", "visible");
+
+            tooltip.html(
+                    "Year" + ": " + d3.format(",.0f")(closestData.Step / simStep) + "<br>" +
+                    "Probability" + ": " + d3.format(",.2f")(closestData.Value*100) + "%<br>"
+                )
+                .style("visibility", "visible")
+                .style("left", ((event.pageX - tooltip.node().offsetWidth - 5)) + "px")
+                .style("top", (event.pageY - 28) + "px");
+        })
+        .on("mouseout", function () {
+            tooltip.style("visibility", "hidden");
+            verticalLine.style("visibility", "hidden");
+        });
+
 }
 
 drawDestitutionGraph(exampleSimulationData);

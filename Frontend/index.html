@@ -3,96 +3,234 @@
     <meta charset="utf-8">
     <title>Drag and Drop</title>
     <link rel="stylesheet" href="style.css">
+
+    <script async defer src="https://buttons.github.io/buttons.js"></script>
+    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="Creykish" data-description="Support me on Buy me a coffee!" data-message="If there is a feature you'd like to see, or if you just found this cool, feel free to get in touch or buy me a coffee!" data-color="#FF813F" data-position="Left" data-x_margin="18" data-y_margin="18"></script>
 </head>
-<div id="sectionbox">
-    <h1>Inputs</h1>
-    <div id="container">
+<body>
+    <div id="hContainer">
         
-        <div>
-            <div id="sectionbox">
-                <div>
-                    <h2>Cashflows</h1>
-                    <svg width="1000" height="250" id = "cashflow-chart"></svg>
+        <div id="sectionbox">
+            <div>
+                <h2>Cashflow Rate (Per Annum)</h1>
+                <svg width="720" height="230" id = "cashflow-chart"></svg>
 
-                </div>
-                <div>
-                    <h2>Portfolio Allocation</h1>
-                    <svg width="1000" height="250" id = "weights-chart"></svg>
-                </div>
             </div>
-            <div id="sectionbox">
-                <div>
-                    <h2>Wealth</h1>
-                    <svg width="1000" height="250" id = "wealth-chart"></svg>
-                </div>    
-                <div>
-                    <h2>Destitution Probability</h1>
-                    <svg width="1000" height="250" id = "extinction-chart"></svg>
+            <div>
+                <h2>Portfolio Allocation</h1>
+                <svg width="720" height="230" id = "weights-chart"></svg>
+            </div>
+            <div>
+                <h2>Simualton Parameters</h2>
+                <div id="controlbox">
+                    <div id="hContainer">
+                    <table>
+                        <tr>
+                            <th style="width: 80px;">Parameter</th> <th style="width: 120px;">Value</th>
+                        </tr>
+                        <tr>
+                            <td><label for="initial-wealth-input">Initial Wealth:</label></td>
+                            <td><span><input type="number" id="initial-wealth-input" value="100000" step="10000" min="0" max="10000000" onchange="runSimulationSignal.emit()">$</span></td>
+                        </tr>
+                        <tr>
+                            <td><label for="stock-returns-input">Stock Returns:</label></td>
+                            <td><span><input type="number" id="stock-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</span></td>
+                        </tr>
+                        <tr>
+                            <td><label for="stock-costs-input">Stock Costs:</label></td>
+                            <td><p><input type="number" id="stock-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="bond-returns-input">Bond Returns:</label>
+                            <td><p><input type="number" id="bond-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        <tr>
+                            <td><label for="bond-costs-input">Bond Costs:</label></td>
+                            <td><p><input type="number" id="bond-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="cash-returns-input">Cash Returns:</label></td>
+                            <td><p><input type="number" id="cash-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="cash-costs-input">Cash Costs:</label></td>
+                            <td><p><input type="number" id="cash-costs-input" value="0.28" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <th style="width: 120px;">Parameter</th> <th style="width: 120px;">Value</th>
+                        </tr>
+                        <tr>
+                            <td><label for="inflation-input">Inflation:</label></td>
+                            <td><p><input type="number" id="inflation-input" value="3" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="iterations-input">Iterations:</label></td>
+                            <td><p><input type="number" id="iterations-input" value="10000" step="1000" min="0" max="100000" onchange="runSimulationSignal.emit()"></p></td>
+                        </tr>
+    
+                        <tr>
+                            <td><label for="timesteps-input">Timesteps:</label></td>
+                            <td><p><input type="number" id="timesteps-input" value="60" step="10" min="0" max="100" onchange="updateTimesteps()"></p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="output-money-type-input">Wealth Displayed Value:</label></td>
+                            <td><p><select id="output-money-type-input" onchange="updateOutputMoneyType()">
+                                <option value="Real">Real</option>
+                                <option value="Nominal">Nominal</option>
+                            </select></p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="wealth-yscale-input">Y-Scale:</label></td>
+                            <td><p><select id="wealth-yscale-input" onchange="updateOutputYScale()">
+                                <option value="linear">Linear</option>
+                                <option value="log">Logarithmic</option>
+                            </select></p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="max-savings-input">Max Savings:</label></td>
+                            <td><p><input type="number" id="max-savings-input" value="40000" step="10000" min="0" max="100000" onchange="updateMaxSavings()">$</p></td>
+                        </tr>
+                        <tr>
+                            <td><label for="max-spending-input">Max Spending:</label></td>
+                            <td><p><input type="number" id="max-spending-input" value="120000" step="10000" min="0" max="1000000" onchange="updateMaxSpend()">$</p></td>
+                        </tr>
+                    </table>
+                        <button id="runsim" onclick="runSimulation()">Run Simulation</button>
                 </div>
             </div>
         </div>
 
-        <div id="controlbox" style="margin-left: 20px;">
-            <table>
-                <tr>
-                    <th>Parameter</th> <th>Value</th>
-                </tr>
-                <tr>
-                    <td><label for="initial-wealth-input">Initial Wealth:</label></td>
-                    <td><p><input type="number" id="initial-wealth-input" value="100000" step="10000" min="0" max="10000000" onchange="runSimulationSignal.emit()">$</p></td>
-                </tr>
-                <tr>
-                    <td><label for="stock-returns-input">Stock Returns:</label></td>
-                    <td><p><input type="number" id="stock-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="stock-costs-input">Stock Costs:</label></td>
-                    <td><p><input type="number" id="stock-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="bond-returns-input">Bond Returns:</label>
-                    <td><p><input type="number" id="bond-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                <tr>
-                    <td><label for="bond-costs-input">Bond Costs:</label></td>
-                    <td><p><input type="number" id="bond-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="cash-returns-input">Cash Returns:</label></td>
-                    <td><p><input type="number" id="cash-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="cash-costs-input">Cash Costs:</label></td>
-                    <td><p><input type="number" id="cash-costs-input" value="0.28" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="inflation-input">Inflation:</label></td>
-                    <td><p><input type="number" id="inflation-input" value="3" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
-                </tr>
-                <tr>
-                    <td><label for="iterations-input">Iterations:</label></td>
-                    <td><p><input type="number" id="iterations-input" value="10000" step="1000" min="0" max="100000" onchange="runSimulationSignal.emit()"></p></td>
-                </tr>
-
-                <tr>
-                    <td><label for="timesteps-input">Timesteps:</label></td>
-                    <td><p><input type="number" id="timesteps-input" value="60" step="10" min="0" max="100" onchange="updateTimesteps()"></p></td>
-                </tr>
-                <tr>
-                    <td><label for="output-money-type-input">Money Value:</label></td>
-                    <td><p><select id="output-money-type-input" onchange="updateOutputMoneyType()">
-                        <option value="Real">Real</option>
-                        <option value="Nominal">Nominal</option>
-                    </select></p></td>
-                </tr>
-
-
-
-            </table>
-            <button id="runsim" onclick="runSimulation()">Run Simulation</button>
         </div>
+            <div id="sectionbox">
+            <div>
+                <h2>Wealth</h1>
+                <svg width="720" height="230" id = "wealth-chart"></svg>
+            </div>    
+            <div>
+                <h2>Destitution Probability</h1>
+                <svg width="720" height="230" id = "extinction-chart"></svg>
+            </div>
+            <h2>Simulation Summary</h2>
+            <div id="controlbox">
+                <div id="hContainer">
+                    <div>
+                    <table>
+                        <tr>
+                            <th style="width: 140px">Parameter</th> <th style="width: 100px">Value</th>
+                        </tr>
+                        <tr>
+                            <td><span>Final Mean Wealth: </span></td>
+                            <td><p>$<span id="final-mean-wealth-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Final Destitution Probability: </span></td>
+                            <td><p><span id="destitution-probability-output">0</span>%</p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Total Destitution Proportion: </span></td>
+                            <td><p><span id="total-destitution-proportion-output">0</span>%</p></td>
+                        </tr>
+
+                        
+                        <tr>
+                            <td><span>Final Median Wealth: </span></td>
+                            <td><p>$<span id="final-median-wealth-output">0</span></p></td>
+                        </tr>
+                        <!-- <tr>
+                            <td><span>Final Wealth Std: </span></td>
+                            <td><p>$<span id="final-wealth-std-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Final Wealth Min: </span></td>
+                            <td><p>$<span id="final-wealth-min-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Final Wealth Max: </span></td>
+                            <td><p>$<span id="final-wealth-max-output">0</span></p></td>
+                        </tr> -->
+
+                    <!-- </table>
+                    <table> -->
+                        <!-- <tr>
+                            <th>Parameter</th> <th>Value</th>
+                        </tr> -->
+                        <tr>
+                            <td><span>Simulation Time: </span></td>
+                            <td><p><span id="simulation-time-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Time per Step: </span></td>
+                            <td><p><span id="simulation-time-per-step-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Time per Path: </span></td>
+                            <td><p><span id="simulation-time-per-path-output">0</span></p></td>
+                        </tr>
+                        <tr>
+                            <td><span>Total Parameters: </span></td>
+                            <td><p><span id="simulation-param-output">0</span></p></td>
+                        </tr>
+                    </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
-</div>
 
+    <div id="textbox" style="width: 1400px; align-items: top; margin-left: 20px; margin-right: 20px; align-self: center;">
+        <h3 >Info</h3>
+        <p>
+            This is a simulation of a portfolio of stocks, bonds and cash-like assets. You can adjust the weights and saving/spending rates of the portfolio to simulate 
+            accumulation and decumulation of wealth over time, for instance saving for and spending in retirement. You can drag and move the points on the graphs to adjust the
+            cashflows and weights of the portfolio. You can add breakpoints to the cashflows and weights by clicking on the lines on the graphs, and you can remove breakpoints
+            by double clicking on them. The simulation will automatically update as you play.
+            <br><br>
+            The simulation is based on a Monte Carlo simulation of the
+            portfolio over a number of iterations and timesteps. We bootstrap the returns of the portfolio based the expected returns you set and the historical returns of
+            the assets. Historical performance of the assets is based on the S&P World Index, S&P Global Bond Index, and the New Zealand offical cash rate. In future, I may add
+            the option to use other indices, such as the S&P 500, and other countries' bond and cash indices - if you have a specific request, please let me know. 
+            <br><br>
+            Historical data is used to calculate the covariance and (where the user does not specify) the expected returns of the assets. This is used to bootstrap the returns 
+            of the portfolio using a cholesky decomposition of the covariance matrix to generate correlated random asset returns, which are then applied to the
+            growth of the portfolio over time in steps no smaller than one year. You can adjust the expected returns of the assets, the weights of the portfolio, and the saving/spending
+            rates of the portfolio over time to simulate different scenarios and investment strategies. The nominal value of the savings rates are automatically adjusted to account
+            for inflation, so that the real value of the savings rates is constant over time. The simulation also calculates the destitution probability of the portfolio, which is the 
+            probability of the portfolio running out of money at the end of the simulation period. 
+            <br><br>
+            The simulation makes a number of assumptions, including that the returns of the assets are normally distributed and that the covariance matrix is constant over time. Additionally,
+            the portfolio is assumed to be constantly rebalanced to the specified weights. Cashflows into and out of the portfolio occur at the end of each timestep (after the returns have 
+            been applied). A number of these assumptions, espicially the normality of the returns, are not necessarily true in practice, and the simulation should be used as a guide only. I
+            may be inclined to add alternate bootstrapping methods in the future, such as a GARCH model, or block-bootstrapping, if there is enough interest to sustain the development.
+            <br><br>
+        </p>
+        <h3>Disclaimer</h3>
+        <p>
+            This simulation is for educational purposes only and should not be considered financial advice. The simulation is based on historical data and assumptions that may not hold true in the future. 
+            The author is not responsible for any losses or damages that may occur as a result of using this simulation. Please consult a financial advisor before making any investment decisions.
+            <br><br>
+        </p>
+        <h3>License</h3>
+        <p>
+            This simulation is licensed under the CC-BY-NC 4.0 International License. You are free to share and adapt the simulation for non-commercial purposes, as long as you give appropriate
+            credit to the author (me), provide a link to the license, and indicate if changes were made. You may not use the material for commercial purposes. If you would like to use the simulation for
+            commercial purposes, please contact me to discuss.
+            <br><br>
+        </p>
+        <p>
+            <h3>Contact</h3>
+            
+            <p>Email me: <a href="dvcallum@gmail.com">dvcallum@gmail.com</a></p> <br>
+            <a class="github-button" href="https://github.com/Creykish" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @Creykish on GitHub">Follow @Creykish</a>
+            <a class="github-button" href="https://github.com/Creykish/MonteCarloPlanner" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-star" data-size="large" aria-label="Star Creykish/MonteCarloPlanner on GitHub">Star</a>
+            <a class="github-button" href="https://github.com/Creykish/MonteCarloPlanner/subscription" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-eye" data-size="large" aria-label="Watch Creykish/MonteCarloPlanner on GitHub">Watch</a>
+            <a class="github-button" href="https://github.com/Creykish/MonteCarloPlanner/fork" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-repo-forked" data-size="large" aria-label="Fork Creykish/MonteCarloPlanner on GitHub">Fork</a>
+
+        </p>
+    </div>
+</body>
 
 
 

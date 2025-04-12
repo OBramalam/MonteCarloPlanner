@@ -4,9 +4,10 @@ function updateTimesteps() {
 
     initCashflows = changeDataseriesTimesteps(initCashflows, maxSteps);
     initWeights = changeDataseriesTimesteps(initWeights, maxSteps);
-
+    
     drawCashflowPlot(initCashflows);
     drawWeightsPlot(initWeights);
+    runSimulationSignal.emit();
 };
 
 function getTimesteps() {
@@ -35,6 +36,54 @@ function updateOutputMoneyType() {
     moneyType = selectedOption.toLowerCase() === "real" ? "real" : "nominal";
     drawWealthGraph(currentSimulationData, moneyType);
     drawDestitutionGraph(currentSimulationData);
+}
+
+function getOutputYScale() {
+    // get the output y scale from the input field
+    let newOutputYScale = document.getElementById('wealth-yscale-input').value;
+    if (newOutputYScale !== "linear" && newOutputYScale !== "log") {
+        alert("Please enter a valid output y scale.");
+        return;
+    }
+    return newOutputYScale;
+}
+
+function updateOutputYScale() {
+    // update the output y scale based on the selected option from the output-y-scale-input selector
+    drawWealthGraph(currentSimulationData, moneyType, getOutputYScale());
+}
+
+function updateMaxSavings() {
+    // update the max savings based on the input field
+    let newMaxSavings = parseFloat(document.getElementById('max-savings-input').value, 10);
+    if (isNaN(newMaxSavings) || newMaxSavings < 0) {
+        alert("Please enter a valid max savings.");
+        return;
+    }
+    maxInflow = newMaxSavings;
+    initCashflows = initCashflows.map(function (i) {
+        i.Value = Math.min(i.Value, maxInflow);
+        return i;
+    });
+
+    drawCashflowPlot(initCashflows);
+    runSimulationSignal.emit();
+}
+
+function updateMaxSpend() {
+    // update the max spend based on the input field
+    let newMaxSpend = -1*parseFloat(document.getElementById('max-spending-input').value, 10);
+    if (isNaN(newMaxSpend) || newMaxSpend > 0) {
+        alert("Please enter a valid max spend.");
+        return;
+    }
+    maxOutflow = newMaxSpend;
+    initCashflows = initCashflows.map(function (i) {
+        i.Value = Math.max(i.Value, maxOutflow);
+        return i;
+    });
+    drawCashflowPlot(initCashflows);
+    runSimulationSignal.emit();
 }
 
 
@@ -107,16 +156,16 @@ function getRequestJson() {
         "inflation": getInflationRate(),
         "asset_costs": getAssetCosts(),
         "asset_returns": getAssetReturns(),
-        "savings_rates": initCashflows.map(function(i) {
+        "savings_rates": initCashflows.map(function (i) {
             return {
-                'Step': i.Step/simStep,
+                'Step': i.Step / simStep,
                 'Value': i.Value
             };
         }
         ),
-        "weights": initWeights.map(function(i) {
+        "weights": initWeights.map(function (i) {
             return {
-                'Step': i.Step/simStep,
+                'Step': i.Step / simStep,
                 'Bonds': i.Bonds,
                 'Stocks': i.Stocks
             };
@@ -168,6 +217,25 @@ class BackendHandler {
     }
 }
 
+function updateSimulationMetadata(simData) {
+    document.getElementById('simulation-time-output').innerText = d3.format(",.0f")(simData.simulation_time * 1000) + "ms";
+    document.getElementById('simulation-time-per-step-output').innerText = d3.format(",.0f")(simData.simulation_time_per_timestep* 1e6)+ "μs";
+    document.getElementById('simulation-param-output').innerText = d3.format(",.0f")(simData.total_parameters);
+    document.getElementById('simulation-time-per-path-output').innerText = d3.format(",.0f")(simData.simulation_time_per_path * 1e6) + "μs";
+    let data = simData.nominal;
+    if (moneyType === "real") {
+        data = simData.real;
+    }
+
+    document.getElementById("final-mean-wealth-output").innerText = d3.format(",.0f")(data.final_mean);
+    document.getElementById("destitution-probability-output").innerText = d3.format(",.2f")(simData.destitution[simData.destitution.length - 1] * 100);
+    // document.getElementById("final-wealth-std-output").innerText = d3.format(",.0f")(data.final_std);
+    document.getElementById("final-median-wealth-output").innerText = d3.format(",.0f")(data.final_median);
+    // document.getElementById("final-wealth-min-output").innerText = d3.format(",.0f")(data.final_min);
+    // document.getElementById("final-wealth-max-output").innerText = d3.format(",.0f")(data.final_max);
+    document.getElementById("total-destitution-proportion-output").innerText = d3.format(",.2f")(simData.destitution_area * 100);
+}
+
 // Example usage:
 const apiQueue = new BackendHandler();
 const simulationsEndpoint = "http://127.0.0.1:5000/"
@@ -200,7 +268,8 @@ function runSimulation() {
             // Update UI or do something with `data`
             currentSimulationData = data;
             drawDestitutionGraph(currentSimulationData);
-            drawWealthGraph(currentSimulationData);
+            drawWealthGraph(currentSimulationData, moneyType, getOutputYScale());
+            updateSimulationMetadata(currentSimulationData);
         }
     });
 }

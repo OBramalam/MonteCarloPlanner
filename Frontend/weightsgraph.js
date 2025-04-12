@@ -229,6 +229,24 @@ async function drawWeightsPlot(weights) {
 
     }
 
+    function removeBreakpoint(d) {
+        let currentXpos = weights.map(function (d) { return d.Step; });
+        let idx = currentXpos.indexOf(d.target.__data__.Step);
+        if (idx === 0) {
+            return; // do not remove the first point
+        }
+        if (idx === currentXpos.length - 1) {
+            return; // do not remove the last point
+        }   
+        if (idx === -1) {
+            console.log('point not found', d.target.__data__.Step);
+            return;
+        }
+        weights.splice(idx, 1);
+        drawWeightsPlot(weights);
+        runSimulationSignal.emit();
+    }
+
 
     let x = d3.scaleLinear()
         .rangeRound([0, width]);
@@ -243,7 +261,7 @@ async function drawWeightsPlot(weights) {
     y.domain([0, 1]);
 
     let xAxis = d3.axisBottom(x)
-        .tickValues(d3.range(0, d3.max(weights, d => d.Step) + 1, 24))
+        .tickValues(d3.range(0, d3.max(weights, d => d.Step) + 1, Math.ceil(maxSteps/simStep/30)*simStep))
         .tickFormat(d => d / 12);
         
     focus.append("g")
@@ -286,7 +304,7 @@ async function drawWeightsPlot(weights) {
         .attr("class", "area")
         .attr("id", "bondarea")
         .attr("d", bondarea)
-        .style("fill", "orange")
+        .style("fill", "black")
         .style("opacity", .6);
 
 
@@ -323,16 +341,32 @@ async function drawWeightsPlot(weights) {
         .attr("cx", function (d) { return x(d.Step); })
         .attr("cy", function (d) { return y(d.Stocks + d.Bonds); })
         .attr("d", stockline)
+        .on('dblclick', removeBreakpoint)
+        .on("mouseover", function() {
+            d3.select(this).attr("r", 7); // Highlight point on hover
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("r", 5); // Reset point size
+        })
+        .style('cursor', 'pointer')
         .call(drag);
 
     dataEnter.append("circle")
         .attr("class", "point")
         .attr("r", 5)
-        .attr("fill", "orange")
+        .attr("fill", "black")
         .attr("id", "bondpoint")
         .attr("cx", function (d) { return x(d.Step); })
         .attr("cy", function (d) { return y(d.Bonds); })
         .attr("d", bondline)
+        .on('dblclick', removeBreakpoint)
+        .on("mouseover", function() {
+            d3.select(this).attr("r", 7); // Highlight point on hover
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("r", 5); // Reset point size
+        })
+        .style('cursor', 'pointer')
         .call(drag);
 
     focus.append("text")

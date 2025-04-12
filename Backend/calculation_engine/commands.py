@@ -134,12 +134,20 @@ class RunSimulationCommand(pydantic.BaseModel):
 
         simulation.expected_returns = exp_return
         
+        start = time.time()
         simulation.simulation_data
+        
 
         mean = simulation.get_mean()
         mean_real = convert_to_real_wealth(
             mean, self.base_simulation_data.index.values, self.inflation
         )[0]
+        
+        median = simulation.get_median()
+        median_real = convert_to_real_wealth(
+            median, self.base_simulation_data.index.values, self.inflation
+        )[0]
+        
 
         percentiles = simulation.get_percentiles(self.percentiles)
         percentiles_real = convert_to_real_wealth(
@@ -149,13 +157,39 @@ class RunSimulationCommand(pydantic.BaseModel):
         destitution_risk = (simulation.simulation_data == 0).sum(axis=0) / simulation.simulation_data.shape[0]
         destitution_risk = destitution_risk
 
+        final_std=np.std(simulation.simulation_data[-1])
+        final_min=np.min(simulation.simulation_data[-1])
+        final_max=np.max(simulation.simulation_data[-1])
+        
+        real_data = convert_to_real_wealth(
+            simulation.simulation_data[-1], self.base_simulation_data.index.values, self.inflation
+        )
+        final_std_real = np.std(real_data[-1])
+        final_min_real = np.min(real_data[-1])
+        final_max_real = np.max(real_data[-1])
+        
+        destitution_area = np.sum(destitution_risk * self.base_simulation_data.time_delta.fillna(0).values)/ np.sum(self.base_simulation_data.time_delta.fillna(0).values)
+        
+        end = time.time()
+        
+        print("destitution area", destitution_area)
         nominal = SimulationDataDTO(
             percentiles={percentile: percentiles[i, :].tolist() for i, percentile in enumerate(self.percentiles)},
             mean=mean.tolist(),
+            final_mean=mean[-1],
+            final_median=median[-1],
+            final_max=final_max,
+            final_min=final_min,
+            final_std=final_std,
         )
         real = SimulationDataDTO(
             percentiles={percentile: percentiles_real[i, :].tolist() for i, percentile in enumerate(self.percentiles)},
             mean=mean_real.tolist(),
+            final_mean=mean_real[-1],
+            final_median=median_real[-1],
+            final_max=final_max_real,
+            final_min=final_min_real,
+            final_std=final_std_real,
         )
 
         return SimulationResultDTO(
@@ -163,4 +197,9 @@ class RunSimulationCommand(pydantic.BaseModel):
             nominal=nominal,
             destitution=destitution_risk.tolist(),
             timesteps=self.base_simulation_data.index.to_list(),
+            simulation_time=end - start,
+            simulation_time_per_timestep=(end - start) / len(self.base_simulation_data.index),
+            total_parameters=len(self.base_simulation_data.index) * 3 * simulation.number_of_simulations,
+            simulation_time_per_path=(end - start) / simulation.number_of_simulations,
+            destitution_area=destitution_area,
         )
