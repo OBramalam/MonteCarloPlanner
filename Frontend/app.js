@@ -238,7 +238,12 @@ function updateSimulationMetadata(simData) {
 
 // Example usage:
 const apiQueue = new BackendHandler();
-const simulationsEndpoint = "http://127.0.0.1:5000/"
+
+// localhost endpoint for testing
+// const simulationsEndpoint = "http://127.0.0.1:5000/"
+
+// Digital Ocean endpoint for production
+const simulationsEndpoint = "https://monte-carlo-backend-wo8lc.ondigitalocean.app/"
 
 // Adding a request
 apiQueue.addRequest(simulationsEndpoint, {}, (err, data) => {
