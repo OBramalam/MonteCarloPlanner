@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>Drag and Drop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<div id="sectionbox">
+    <h1>Inputs</h1>
+    <div id="container">
+        
+        <div>
+            <div id="sectionbox">
+                <div>
+                    <h2>Cashflows</h1>
+                    <svg width="1000" height="250" id = "cashflow-chart"></svg>
+
+                </div>
+                <div>
+                    <h2>Portfolio Allocation</h1>
+                    <svg width="1000" height="250" id = "weights-chart"></svg>
+                </div>
+            </div>
+            <div id="sectionbox">
+                <div>
+                    <h2>Wealth</h1>
+                    <svg width="1000" height="250" id = "wealth-chart"></svg>
+                </div>    
+                <div>
+                    <h2>Destitution Probability</h1>
+                    <svg width="1000" height="250" id = "extinction-chart"></svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="controlbox" style="margin-left: 20px;">
+            <table>
+                <tr>
+                    <th>Parameter</th> <th>Value</th>
+                </tr>
+                <tr>
+                    <td><label for="initial-wealth-input">Initial Wealth:</label></td>
+                    <td><p><input type="number" id="initial-wealth-input" value="100000" step="10000" min="0" max="10000000" onchange="runSimulationSignal.emit()">$</p></td>
+                </tr>
+                <tr>
+                    <td><label for="stock-returns-input">Stock Returns:</label></td>
+                    <td><p><input type="number" id="stock-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="stock-costs-input">Stock Costs:</label></td>
+                    <td><p><input type="number" id="stock-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="bond-returns-input">Bond Returns:</label>
+                    <td><p><input type="number" id="bond-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                <tr>
+                    <td><label for="bond-costs-input">Bond Costs:</label></td>
+                    <td><p><input type="number" id="bond-costs-input" value="0.5" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="cash-returns-input">Cash Returns:</label></td>
+                    <td><p><input type="number" id="cash-returns-input" value="" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="cash-costs-input">Cash Costs:</label></td>
+                    <td><p><input type="number" id="cash-costs-input" value="0.28" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="inflation-input">Inflation:</label></td>
+                    <td><p><input type="number" id="inflation-input" value="3" step="0.1" min="0" max="100" onchange="runSimulationSignal.emit()">%</p></td>
+                </tr>
+                <tr>
+                    <td><label for="iterations-input">Iterations:</label></td>
+                    <td><p><input type="number" id="iterations-input" value="10000" step="1000" min="0" max="100000" onchange="runSimulationSignal.emit()"></p></td>
+                </tr>
+
+                <tr>
+                    <td><label for="timesteps-input">Timesteps:</label></td>
+                    <td><p><input type="number" id="timesteps-input" value="60" step="10" min="0" max="100" onchange="updateTimesteps()"></p></td>
+                </tr>
+                <tr>
+                    <td><label for="output-money-type-input">Money Value:</label></td>
+                    <td><p><select id="output-money-type-input" onchange="updateOutputMoneyType()">
+                        <option value="Real">Real</option>
+                        <option value="Nominal">Nominal</option>
+                    </select></p></td>
+                </tr>
+
+
+
+            </table>
+            <button id="runsim" onclick="runSimulation()">Run Simulation</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script type="text/javascript" src="utils.js"></script>
+<script type="text/javascript" src="cashflowgraph.js"></script>
+<script type="text/javascript" src="weightsgraph.js"></script>
+<script type="text/javascript" src="wealthgraph.js"></script>
+<script type="text/javascript" src="desitutiongraph.js"></script>
+<script type="text/javascript" src="app.js"></script>
+<script>
+    drawCashflowPlot(initCashflows);
+    drawWeightsPlot(initWeights);
+    runSimulationSignal.emit();
+</script>
