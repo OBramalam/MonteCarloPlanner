@@ -1,0 +1,4 @@
+[submodule "UI"]
+	path = UI
+	url = https://github.com/Creykish/Calspace
+	branch = main
