@@ -6,6 +6,7 @@ import os
 
 arg_parser = argparse.ArgumentParser(description="Run the Flask web application.")
 
+print("MAX_SIMULATIONS:", os.environ.get("MAX_SIMULATIONS", 1000000))
 app = build_api()
 CORS(app)
 
