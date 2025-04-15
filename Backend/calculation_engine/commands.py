@@ -9,6 +9,7 @@ from .simulation_strategies import SimulationStrategyFactory
 from .dto import SimulationDataDTO, SimulationResultDTO
 from pydantic.alias_generators import to_camel, to_snake
 from .calcs import convert_to_real_wealth
+import os
 
 
 class RunSimulationCommand(pydantic.BaseModel):
@@ -32,6 +33,7 @@ class RunSimulationCommand(pydantic.BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
+        self.number_of_simulations = min(os.environ.get("MAX_SIMULATIONS", 1000000), self.number_of_simulations)
         self._simulation_strategy = SimulationStrategyFactory(
             self.base_simulation_data, self.number_of_simulations, self.inflation, self.initial_wealth, self.step_size
         ).build_strategy(self.simulation_type)
