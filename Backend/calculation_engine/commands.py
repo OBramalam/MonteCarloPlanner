@@ -33,7 +33,7 @@ class RunSimulationCommand(pydantic.BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.number_of_simulations = max(os.environ.get("MAX_SIMULATIONS", 1000000), self.number_of_simulations)
+        self.number_of_simulations = min(os.environ.get("MAX_SIMULATIONS", 1000000), self.number_of_simulations)
         self._simulation_strategy = SimulationStrategyFactory(
             self.base_simulation_data, self.number_of_simulations, self.inflation, self.initial_wealth, self.step_size
         ).build_strategy(self.simulation_type)
