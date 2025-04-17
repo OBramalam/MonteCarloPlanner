@@ -58,6 +58,7 @@ class RunSimulationCommand(pydantic.BaseModel):
         cashflows_df = pd.DataFrame([cashflow.model_dump() for cashflow in self.savings_rates])
         cashflows_df = cashflows_df.rename(columns={"value": "cashflow"})
         print(cashflows_df)
+        print(weights_df)
         cashflows_df = cashflows_df.set_index("step")
 
         
