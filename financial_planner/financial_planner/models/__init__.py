@@ -1,4 +1,4 @@
-from .user_model import User
+from .user_model import UserProfile
 from .financial_event_model import FinancialEvent
 from .asset_model import Asset
 from .liability_model import Liability
